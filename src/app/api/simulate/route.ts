@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import LaunchDarkly from 'launchdarkly-node-server-sdk';
 import { randomUUID } from 'crypto';
