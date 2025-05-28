@@ -1,5 +1,7 @@
 # LaunchDarkly Metric Simulator
 
+**Try it online:** [https://ld-metric-simulator.vercel.app](https://ld-metric-simulator.vercel.app)
+
 This project is a web-based simulator for generating and sending synthetic flag evaluation and event data to a LaunchDarkly environment. It is built with Next.js (App Router) and uses the LaunchDarkly Node SDK on the backend.
 
 ## Features
