@@ -1,103 +1,134 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+
+export default function HomePage() {
+  const [sdkKey, setSdkKey] = useState('');
+  const [flagKey, setFlagKey] = useState('');
+  const [events, setEvents] = useState([{ name: '', probability: 1.0 }]);
+  const [userCount, setUserCount] = useState(10);
+  const [contexts, setContexts] = useState([{ kind: 'user', attributes: [{ key: 'country', value: 'US' }] }]);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleRun = async () => {
+    setStatus('Running...');
+    try {
+      const res = await fetch('/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sdkKey, flagKey, events, userCount, contexts })
+      });
+
+      const data = await res.json();
+      setStatus(data.message || 'Simulation complete');
+    } catch (err) {
+      console.error(err);
+      setStatus('Simulation failed');
+    }
+  };
+
+  const updateEvent = (index: number, key: string, value: string | number) => {
+    const newEvents = [...events];
+    (newEvents[index] as any)[key] = key === 'probability' ? parseFloat(value as string) : value;
+    setEvents(newEvents);
+  };
+
+  const updateContextAttr = (ctxIndex: number, attrIndex: number, key: 'key' | 'value', value: string) => {
+    const newContexts = [...contexts];
+    newContexts[ctxIndex].attributes[attrIndex][key] = value;
+    setContexts(newContexts);
+  };
+
+  const addContext = () => {
+    setContexts([...contexts, { kind: '', attributes: [{ key: '', value: '' }] }]);
+  };
+
+  const addAttribute = (ctxIndex: number) => {
+    const newContexts = [...contexts];
+    newContexts[ctxIndex].attributes.push({ key: '', value: '' });
+    setContexts(newContexts);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="max-w-2xl mx-auto p-6 space-y-6">
+      <div className="rounded-xl p-6 bg-gradient-to-r from-blue-600 to-purple-700 text-white shadow">
+        <h1 className="text-3xl font-bold">LaunchDarkly Experiment Simulator</h1>
+        <p className="mt-2 text-sm text-white/80">Simulate flag evaluations and event tracking for your experimentation projects.</p>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="space-y-4 bg-white shadow border border-gray-200 p-6 rounded-xl">
+        <div>
+          <label className="block font-semibold text-gray-700">SDK Key</label>
+          <input type="password" value={sdkKey} onChange={e => setSdkKey(e.target.value)} className="w-full border border-gray-300 p-2 rounded" />
+          <p className="text-xs text-gray-500 mt-1">Enter your LaunchDarkly server-side SDK key. This is required to connect to your LaunchDarkly project.</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div>
+          <label className="block font-semibold text-gray-700">Flag Key</label>
+          <input type="text" value={flagKey} onChange={e => setFlagKey(e.target.value)} className="w-full border border-gray-300 p-2 rounded" />
+          <p className="text-xs text-gray-500 mt-1">Specify the feature flag key you want to evaluate during the simulation.</p>
+        </div>
+
+        <div>
+          <label className="block font-semibold text-gray-700">Events</label>
+          {events.map((event, idx) => (
+            <div key={idx} className="flex gap-2 mb-2">
+              <input type="text" placeholder="Event name" value={event.name} onChange={e => updateEvent(idx, 'name', e.target.value)} className="flex-1 border border-gray-300 p-2 rounded" />
+              <input
+                type="number"
+                min="0"
+                max="1"
+                step="0.01"
+                value={isNaN(event.probability) || event.probability === undefined || event.probability === null ? '' : event.probability}
+                onChange={e => updateEvent(idx, 'probability', e.target.value)}
+                className="w-24 border border-gray-300 p-2 rounded"
+              />
+            </div>
+          ))}
+          <button onClick={() => setEvents([...events, { name: '', probability: 1.0 }])} className="text-blue-600 underline text-sm">+ Add Event</button>
+          <p className="text-xs text-gray-500 mt-1">Add one or more events to track. Each event has a name and a probability (0-1) for how often it should be sent per user.</p>
+        </div>
+
+        <div>
+          <label className="block font-semibold text-gray-700">Contexts</label>
+          {contexts.map((ctx, ctxIdx) => (
+            <div key={ctxIdx} className="border border-gray-300 p-3 rounded mb-3">
+              <input type="text" placeholder="Kind (e.g. user, org)" value={ctx.kind} onChange={e => {
+                const updated = [...contexts];
+                updated[ctxIdx].kind = e.target.value;
+                setContexts(updated);
+              }} className="w-full border border-gray-300 p-2 rounded mb-2" />
+              {ctx.attributes.map((attr, attrIdx) => (
+                <div key={attrIdx} className="flex gap-2 mb-2">
+                  <input type="text" placeholder="Attribute key" value={attr.key} onChange={e => updateContextAttr(ctxIdx, attrIdx, 'key', e.target.value)} className="flex-1 border border-gray-300 p-2 rounded" />
+                  <input type="text" placeholder="Attribute value" value={attr.value} onChange={e => updateContextAttr(ctxIdx, attrIdx, 'value', e.target.value)} className="flex-1 border border-gray-300 p-2 rounded" />
+                </div>
+              ))}
+              <button onClick={() => addAttribute(ctxIdx)} className="text-blue-600 underline text-sm">+ Add Attribute</button>
+            </div>
+          ))}
+          <button onClick={addContext} className="text-blue-600 underline text-sm">+ Add Context</button>
+          <p className="text-xs text-gray-500 mt-1">Define one or more contexts (e.g., user, org) and their attributes. Each context kind will be simulated as a unique entity.</p>
+        </div>
+
+        <div>
+          <label className="block font-semibold text-gray-700">User Count</label>
+          <input
+            type="number"
+            value={userCount || ''}
+            onChange={e => {
+              const val = e.target.value;
+              setUserCount(val === '' ? 0 : Number(val));
+            }}
+            className="w-full border border-gray-300 p-2 rounded"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <p className="text-xs text-gray-500 mt-1">Set how many simulated users (or entities) to run through the flag evaluation and event tracking.</p>
+        </div>
+
+        <button onClick={handleRun} className="bg-gradient-to-r from-blue-600 to-purple-700 text-white px-4 py-2 rounded font-semibold shadow">Run Simulation</button>
+
+        {status && <p className="mt-4 font-medium text-gray-800">Status: {status}</p>}
+      </div>
+    </main>
   );
 }
