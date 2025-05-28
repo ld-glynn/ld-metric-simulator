@@ -10,6 +10,7 @@ export default function HomePage() {
   const [userCount, setUserCount] = useState(10);
   const [contexts, setContexts] = useState([{ kind: 'user', attributes: [{ key: 'country', value: 'US' }] }]);
   const [status, setStatus] = useState<string | null>(null);
+  const [preferredVariation, setPreferredVariation] = useState('');
 
   const handleRun = async () => {
     setStatus('Running...');
@@ -17,7 +18,7 @@ export default function HomePage() {
       const res = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sdkKey, flagKey, events, userCount, contexts })
+        body: JSON.stringify({ sdkKey, flagKey, events, userCount, contexts, preferredVariation })
       });
 
       const data = await res.json();
@@ -68,6 +69,18 @@ export default function HomePage() {
           <label className="block font-semibold text-gray-700">Flag Key</label>
           <input type="text" value={flagKey} onChange={e => setFlagKey(e.target.value)} className="w-full border border-gray-300 p-2 rounded" />
           <p className="text-xs text-gray-500 mt-1">Specify the feature flag key you want to evaluate during the simulation.</p>
+        </div>
+
+        <div>
+          <label className="block font-semibold text-gray-700">Preferred Variation (optional)</label>
+          <input
+            type="text"
+            value={preferredVariation}
+            onChange={e => setPreferredVariation(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded"
+            placeholder="e.g. on, off, 1, 2"
+          />
+          <p className="text-xs text-gray-500 mt-1">Only fire events for users who receive this variation. Leave blank to fire for all variations.</p>
         </div>
 
         <div>

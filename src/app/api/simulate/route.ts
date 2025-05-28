@@ -9,7 +9,7 @@ function sleep(ms: number) {
 }
 
 export async function POST(req: NextRequest) {
-  const { sdkKey, flagKey, events, userCount, contexts } = await req.json();
+  const { sdkKey, flagKey, events, userCount, contexts, preferredVariation } = await req.json();
 
   if (!sdkKey || !flagKey || !events || !userCount || !contexts) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   for (let i = 0; i < userCount; i++) {
     const multiContext: any = { kind: 'multi' };
     for (const ctx of contexts) {
-      const attributes: any = { key: randomUUID() };
+      const attributes: any = { key: `${i}-${ctx.kind}` };
       console.log(`Attributes: ${JSON.stringify(attributes)}`);
       for (const attr of ctx.attributes) {
         attributes[attr.key] = attr.value;
@@ -29,14 +29,16 @@ export async function POST(req: NextRequest) {
       multiContext[ctx.kind] = attributes;
     }
 
-    await client.variation(flagKey, multiContext, 'default');
+    const variation = await client.variation(flagKey, multiContext, 'default');
+    console.log(`User index ${i} got variation: ${variation}`);
 
-    for (const event of events) {
-      console.log(`Event: ${JSON.stringify(event)}`);
-      if (Math.random() < event.probability) {
-        client.track(event.name, multiContext);
-        console.log(`Sent event '${event.name}' for user index ${i}`);
-        await sleep(500); // 500ms delay between events
+    if (!preferredVariation || String(variation) === preferredVariation) {
+      for (const event of events) {
+        if (Math.random() < event.probability) {
+          client.track(event.name, multiContext);
+          console.log(`Sent event '${event.name}' for user index ${i}`);
+          await sleep(3000); // 3s delay between events
+        }
       }
     }
   }
