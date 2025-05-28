@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
     await client.variation(flagKey, multiContext, 'default');
 
     for (const event of events) {
+      console.log(`Event: ${JSON.stringify(event)}`);
       if (Math.random() < event.probability) {
         client.track(event.name, multiContext);
         console.log(`Sent event '${event.name}' for user index ${i}`);
