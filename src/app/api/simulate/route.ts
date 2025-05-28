@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       if (Math.random() < event.probability) {
         client.track(event.name, multiContext);
         console.log(`Sent event '${event.name}' for user index ${i}`);
-        await sleep(3000); // 500ms delay between events
+        await sleep(500); // 500ms delay between events
       }
     }
   }
