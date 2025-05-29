@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   for (let i = 0; i < userCount; i++) {
     const multiContext: any = { kind: 'multi' };
     for (const ctx of contexts) {
-      const attributes: any = { key: `${i}-${ctx.kind}` };
+      const attributes: any = { key: randomUUID() };
       console.log(`Attributes: ${JSON.stringify(attributes)}`);
       for (const attr of ctx.attributes) {
         attributes[attr.key] = attr.value;

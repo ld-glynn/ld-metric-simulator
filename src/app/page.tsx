@@ -87,7 +87,7 @@ export default function HomePage() {
           <label className="block font-semibold text-gray-700">Events</label>
           {events.map((event, idx) => (
             <div key={idx} className="flex gap-2 mb-2">
-              <input type="text" placeholder="Event name" value={event.name} onChange={e => updateEvent(idx, 'name', e.target.value)} className="flex-1 border border-gray-300 p-2 rounded" />
+              <input type="text" placeholder="Event key" value={event.name} onChange={e => updateEvent(idx, 'name', e.target.value)} className="flex-1 border border-gray-300 p-2 rounded" />
               <input
                 type="number"
                 min="0"
