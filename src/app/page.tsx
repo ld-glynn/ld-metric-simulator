@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiGet, apiPost } from '@/lib/client';
 import { MAX_BATCH } from '@/lib/constants';
+import { QUICKSTART_TEMPLATES } from '@/lib/quickstart-templates';
 import type {
   Environment,
   ExperimentSummary,
@@ -10,6 +11,8 @@ import type {
   FlagSummary,
   MetricSetting,
   Project,
+  QuickstartRequest,
+  QuickstartResponse,
   SimMetric,
   SimulateRequest,
   SimulateResponse,
@@ -73,6 +76,9 @@ export default function HomePage() {
   const [detail, setDetail] = useState<FlagDetail | null>(null);
   const [experimentKey, setExperimentKey] = useState<string>('');
   const [manualMetricKeys, setManualMetricKeys] = useState<string[]>([]);
+  const [templateId, setTemplateId] = useState(QUICKSTART_TEMPLATES[0].id);
+  const [creating, setCreating] = useState(false);
+  const [created, setCreated] = useState<QuickstartResponse | null>(null);
 
   const [visitors, setVisitors] = useState(1000);
   const [pacing, setPacing] = useState(0);
@@ -148,6 +154,7 @@ export default function HomePage() {
     setFlags([]);
     setFlagKey('');
     setDetail(null);
+    setCreated(null);
     setBusy(true);
     apiGet<{ flags: FlagSummary[] }>(`/api/ld/flags?project=${encodeURIComponent(project)}&env=${encodeURIComponent(environment)}`, token)
       .then(r => setFlags(r.flags))
@@ -172,6 +179,24 @@ export default function HomePage() {
       .finally(() => setBusy(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, environment, flagKey]);
+
+  const createSample = async () => {
+    setCreating(true);
+    setError(null);
+    try {
+      const body: QuickstartRequest = { project, environment, templateId };
+      const made = await apiPost<QuickstartResponse>('/api/ld/quickstart', token, body);
+      const r = await apiGet<{ flags: FlagSummary[] }>(`/api/ld/flags?project=${encodeURIComponent(project)}&env=${encodeURIComponent(environment)}`, token);
+      setFlags(r.flags);
+      setFlagFilter('');
+      setCreated(made);
+      setFlagKey(made.flagKey);
+    } catch (e) {
+      fail(e);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const filteredFlags = useMemo(() => {
     const q = flagFilter.trim().toLowerCase();
@@ -300,7 +325,7 @@ export default function HomePage() {
         <Card title="Connect to LaunchDarkly" subtitle="Paste an API access token. It is used only for this session and is never stored.">
           <div className="space-y-4">
             <div>
-              <Label hint="In LaunchDarkly: Organization settings → Authorization → Create token. The Reader role is enough.">API access token</Label>
+              <Label hint="In LaunchDarkly: Organization settings → Authorization → Create token. Reader is enough to send traffic to an existing experiment; Writer lets the tool create a sample experiment for you.">API access token</Label>
               <Input type="password" autoComplete="off" placeholder="api-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" value={token} onChange={e => setToken(e.target.value)} onKeyDown={e => e.key === 'Enter' && token && connect()} />
             </div>
             <Alert tone="info">
@@ -353,6 +378,36 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+          {environment && !detail && !busy && (
+            <div className="mt-6 rounded-lg border border-dashed border-indigo-300 bg-indigo-50/60 p-4">
+              <div className="text-sm font-semibold text-indigo-900">Nothing to pick yet? Create a sample experiment.</div>
+              <p className="mt-1 text-sm text-indigo-900/80">
+                Creates a sample flag, a metric, and a running experiment in <strong>{environments.find(e => e.key === environment)?.name ?? environment}</strong>, then brings you straight to sending traffic. Nothing needs to be deployed. Everything is tagged <code>experiment-simulator</code> so it is easy to find and archive later. Needs a Writer token.
+              </p>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Select value={templateId} onChange={e => setTemplateId(e.target.value)} className="sm:w-2/3" disabled={creating}>
+                  {QUICKSTART_TEMPLATES.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.title}
+                    </option>
+                  ))}
+                </Select>
+                <Button onClick={createSample} disabled={creating}>
+                  {creating ? <Spinner /> : 'Create sample experiment'}
+                </Button>
+              </div>
+              <p className="mt-2 text-xs text-indigo-900/70">{QUICKSTART_TEMPLATES.find(t => t.id === templateId)?.blurb}</p>
+            </div>
+          )}
+
+          {created && detail && (
+            <div className="mt-6">
+              <Alert tone="success">
+                Created and started. Flag <code>{created.flagKey}</code>, metric <code>{created.metricKey}</code>, experiment <code>{created.experimentKey}</code>. Continue below to send visitors.
+              </Alert>
+            </div>
+          )}
 
           {detail && (
             <div className="mt-6 space-y-3">

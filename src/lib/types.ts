@@ -91,3 +91,6 @@ export type SimulateResponse = {
   notInExperiment: number;
   byVariation: Record<string, VariationTally>;
 };
+
+export type QuickstartRequest = { project: string; environment: string; templateId: string };
+export type QuickstartResponse = { flagKey: string; metricKey: string; experimentKey: string };

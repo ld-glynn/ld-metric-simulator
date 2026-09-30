@@ -8,8 +8,9 @@ You do not need to know SDK keys, flag keys, or event names. Paste an API access
 
 ## How it works
 
-1. **Connect.** Paste a LaunchDarkly API access token. The Reader role is enough.
+1. **Connect.** Paste a LaunchDarkly API access token. Reader is enough to send traffic to an existing experiment. Writer lets the tool create a sample experiment for you.
 2. **Choose.** Pick a project, an environment, and a flag. Experiments that use that flag appear automatically, with their metrics and variations. If the flag has no experiment yet you can pick metrics from the project instead.
+   **Starting from an empty account?** Pick "Create a sample experiment" instead of a flag. The tool creates a sample flag, a custom metric, and an experiment on the flag's default rule, turns the flag on in the chosen environment, starts the experiment, and brings you straight to step 3. Three templates: a two-variation call-to-action copy test, a three-variation pricing layout test, and a numeric "checkout time" test where lower is better. Everything it creates is tagged `experiment-simulator` and described as safe to archive.
 3. **Configure.** Set how many visitors to send and, for every variation, the conversion rate (or average value, for numeric metrics). The defaults already give one variation a believable lift. "Make this the winner" rigs the numbers for you.
 4. **Run.** Visitors are sent in batches with a live progress bar and per-variation tallies. Choose "spread over 4 hours" for multi-armed bandits so the reallocation curve has time to move.
 
@@ -21,6 +22,7 @@ Under the hood each visitor is a fresh context of the experiment's randomization
 - **Custom metrics only.** Page view and click metrics are produced by the browser SDK and cannot be simulated from a server. They are listed and skipped.
 - **Audience tab stays empty.** Server-side SDKs send rolled-up evaluation summaries, which populate experiment and flag evaluation charts but not the Audience tab.
 - **Use a test environment.** These are real events in whatever environment you pick.
+- **Sample experiments are real objects.** The quick start writes a flag, a metric, and a running experiment into the project you choose. Use a test environment, and archive them (tag `experiment-simulator`) when you are done.
 - **Bandits need time.** Multi-armed bandits reallocate at most hourly, so spread traffic over a few hours to see more than one step.
 
 ## Your token
@@ -42,6 +44,8 @@ Open http://localhost:3000. No environment variables are needed.
 
 - `src/app/page.tsx`: the four-step UI
 - `src/app/api/ld/*`: read-only proxies to the LaunchDarkly REST API (projects, environments, flags, flag detail with experiments and metrics)
+- `src/app/api/ld/quickstart/route.ts`: creates and starts a sample flag + metric + experiment (Writer token)
+- `src/lib/quickstart-templates.ts`: the sample experiment templates
 - `src/app/api/simulate/route.ts`: runs one batch of visitors through the LaunchDarkly Node server SDK
 - `src/lib/ld-rest.ts`: REST helper and error mapping
 
