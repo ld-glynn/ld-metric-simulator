@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "LaunchDarkly Experiment Simulator",
-  description: "Simulate LaunchDarkly experiments with multiple contexts and events",
+  description: "Send realistic synthetic visitors and conversions to a LaunchDarkly experiment",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-gray-50">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
