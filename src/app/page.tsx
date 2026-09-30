@@ -19,6 +19,7 @@ import type {
   Variation,
   VariationTally,
 } from '@/lib/types';
+import Link from 'next/link';
 import { Alert, Button, Card, Input, Label, Select, Spinner, Stepper } from '@/components/ui';
 
 const STEPS = ['Connect', 'Choose', 'Configure', 'Run'];
@@ -309,6 +310,21 @@ export default function HomePage() {
           Send realistic, made-up visitors and conversions to an experiment so its Results tab has something to show. No SDK keys or event names to look up.
         </p>
       </header>
+
+      {step === 0 && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border-2 border-blue-600 bg-white p-5 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-blue-700">You are here</div>
+            <h2 className="mt-1 text-lg font-semibold text-gray-900">Send events straight to LaunchDarkly</h2>
+            <p className="mt-1 text-sm text-gray-600">No website needed. Pick an experiment (or create a sample one) and this tool plays the visitors itself. Quickest way to see a Results tab fill in.</p>
+          </div>
+          <Link href="/site-traffic" className="block rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-emerald-600">
+            <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Have a staging site?</div>
+            <h2 className="mt-1 text-lg font-semibold text-gray-900">Send real visitors to your own site →</h2>
+            <p className="mt-1 text-sm text-gray-600">Realistic browser visitors load your staging site, look around, and convert. Your own SDK does every evaluation and event, exactly like production traffic.</p>
+          </Link>
+        </div>
+      )}
 
       <Stepper steps={STEPS} current={step} />
 

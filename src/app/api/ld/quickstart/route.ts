@@ -66,6 +66,8 @@ export async function POST(req: NextRequest) {
       tags: [SIMULATOR_TAG],
       variations: tpl.flag.variations.map(v => ({ name: v.name, value: v.value })),
       defaults: { onVariation: 0, offVariation: 0 },
+      // Available to browser SDKs too, so the same flag works if they wire it into a real page later.
+      clientSideAvailability: { usingEnvironmentId: true, usingMobileKey: true },
       ...(maintainerId ? { maintainerId } : {}),
     });
 

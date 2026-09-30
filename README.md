@@ -6,7 +6,12 @@ Sends realistic, made-up visitors and conversions to a LaunchDarkly experiment s
 
 You do not need to know SDK keys, flag keys, or event names. Paste an API access token, pick the experiment from dropdowns, decide how each variation should perform, and press send.
 
-## How it works
+## Two modes
+
+- **Send events straight to LaunchDarkly.** No website needed. Pick an experiment, or create a sample one, and the tool plays the visitors itself through the server-side SDK. The four steps below.
+- **Send real visitors to your own site** (`/site-traffic`). For teams that have wired the experiment into a staging site and want traffic to arrive there. The page writes a journey file (staging URL, how a visitor converts, visitors per hour, duration) and the one command to run it. The command pulls the companion runner, [ld-experiment-visitors](https://github.com/ld-glynn/ld-experiment-visitors), straight from GitHub and drives real Chrome sessions at the staging site with a fresh identity per visitor. The site's own SDK does every evaluation and event, so evaluation charts, Results, and the Audience tab fill in exactly as with production traffic. Needs Node.js and Chrome or Edge on the machine that runs it, which can be inside the VPN.
+
+## How it works (direct mode)
 
 1. **Connect.** Paste a LaunchDarkly API access token. Reader is enough to send traffic to an existing experiment. Writer lets the tool create a sample experiment for you.
 2. **Choose.** Pick a project, an environment, and a flag. Experiments that use that flag appear automatically, with their metrics and variations. If the flag has no experiment yet you can pick metrics from the project instead.
@@ -42,7 +47,8 @@ Open http://localhost:3000. No environment variables are needed.
 
 ## Project layout
 
-- `src/app/page.tsx`: the four-step UI
+- `src/app/page.tsx`: the four-step UI (direct mode)
+- `src/app/site-traffic/page.tsx`: journey builder for the real-visitors mode
 - `src/app/api/ld/*`: read-only proxies to the LaunchDarkly REST API (projects, environments, flags, flag detail with experiments and metrics)
 - `src/app/api/ld/quickstart/route.ts`: creates and starts a sample flag + metric + experiment (Writer token)
 - `src/lib/quickstart-templates.ts`: the sample experiment templates
