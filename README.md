@@ -6,6 +6,8 @@ Sends realistic, made-up visitors and conversions to a LaunchDarkly experiment s
 
 You do not need to know SDK keys, flag keys, or event names. Paste an API access token, pick the experiment from dropdowns, decide how each variation should perform, and press send.
 
+> **Developer with your own staging site?** You want the companion CLI, [ld-experiment-visitors](https://github.com/ld-glynn/ld-experiment-visitors). Three commands: `init` writes the journey file, `--once --headed` checks it, then run it. Real Chrome visitors hit your site and your own SDK records everything. This web app is for the no-site case and for building the journey file in a form.
+
 ## Two modes
 
 - **Send events straight to LaunchDarkly.** No website needed. Pick an experiment, or create a sample one, and the tool plays the visitors itself through the server-side SDK. The four steps below.
